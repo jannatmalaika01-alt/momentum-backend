@@ -1,31 +1,29 @@
-# Stage 1: Build the Spring Boot app using Maven
+# Use Maven image to build the app
 FROM maven:3.9.2-eclipse-temurin-21 AS build
 
 # Set working directory
 WORKDIR /app
 
-# Copy pom.xml first to cache dependencies
+# Copy pom.xml and download dependencies first (for caching)
 COPY pom.xml .
+RUN mvn dependency:go-offline
 
-# Download dependencies only
-RUN mvn dependency:go-offline -B
-
-# Copy the source code
+# Copy source code
 COPY src ./src
 
-# Build the jar (skip tests to speed up)
+# Package the application
 RUN mvn clean package -DskipTests
 
-# Stage 2: Run the app
-FROM eclipse-temurin:21-jdk
+# Use minimal Java runtime image for running the app
+FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
-# Copy the jar from the build stage
+# Copy the built jar from the build stage
 COPY --from=build /app/target/*.jar app.jar
 
-# Expose port 8080 for Railway
+# Expose port 8080
 EXPOSE 8080
 
-# Command to run the app
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Run the app
+ENTRYPOINT ["java","-jar","app.jar"]
