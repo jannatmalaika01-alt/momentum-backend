@@ -1,10 +1,8 @@
 [build]
-builder = "maven"
+builder = "NIXPACKS"
 
 [build.environment]
 JAVA_VERSION = "17"
 
 [[services]]
-name = "web"
-[http]
-healthcheckPath = "/actuator/health"
+http.healthcheckPath = "/actuator/health"
